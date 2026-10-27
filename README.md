@@ -9,7 +9,7 @@ An AI-assisted workspace for planning Minecraft mods and generating starter arti
 - Deterministic starter generation that works without an AI key.
 - Optional OpenAI-compatible AI generation through server-side configuration.
 - Java/Gradle build-log diagnosis for common errors.
-- JSON bundle export and file preview.
+- ZIP bundle export with individual generated files and metadata.
 - Input validation and relative-path safety checks.
 
 ## Requirements
