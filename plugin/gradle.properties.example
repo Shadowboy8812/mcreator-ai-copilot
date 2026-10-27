@@ -1,0 +1,3 @@
+# Copy this file to gradle.properties and set the path to the MCreator source Gradle project.
+# This must be the MCreator source checkout/project directory, not just the application executable.
+mcreator_path=/absolute/path/to/MCreator
