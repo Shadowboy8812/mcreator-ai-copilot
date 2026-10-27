@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: Check out AI Copilot
         uses: actions/checkout@v4
-      - name: Check out MCreator source with required submodules
+      - name: Check out MCreator source
         uses: actions/checkout@v4
         with:
           repository: MCreator/MCreator
@@ -29,9 +29,17 @@ jobs:
         with:
           distribution: temurin
           java-version: "25"
-      - name: Build native plugin against MCreator source
+      - name: Prepare MCreator JCEF runtime
         working-directory: MCreator
-        run: ./gradlew --no-daemon -Pmcreator_path="$GITHUB_WORKSPACE/MCreator" -p "$GITHUB_WORKSPACE/plugin" clean jar
+        run: |
+          ./gradlew --no-daemon initialSetup
+          test -f jdk/jbr_linux_64/lib/jcef.jar || {
+            echo "::error::MCreator setup did not provide jdk/jbr_linux_64/lib/jcef.jar"
+            find jdk -iname '*jcef*.jar' -print || true
+            exit 1
+          }
+      - name: Build native plugin against MCreator source
+        run: ./MCreator/gradlew --no-daemon -Pmcreator_path="$GITHUB_WORKSPACE/MCreator" -p "$GITHUB_WORKSPACE/plugin" clean jar
       - name: Verify plugin ZIP contains manifest and entry point
         run: |
           python3 - <<'PY'
