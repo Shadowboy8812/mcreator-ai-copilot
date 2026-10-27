@@ -7,7 +7,7 @@
 - [x] Common Gradle/Java error diagnosis
 - [x] Bundle JSON export
 - [ ] Verify full build and CI
-- [ ] Add safe ZIP export and per-file download
+- [x] Add safe ZIP export with per-file contents
 
 ## Next
 - [ ] Provider configuration UI without exposing secrets
