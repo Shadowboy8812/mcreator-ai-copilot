@@ -8,7 +8,7 @@
     "dev:api": "npm --workspace @mcreator-ai-copilot/api run dev",
     "dev:web": "npm --workspace @mcreator-ai-copilot/web run dev",
     "build": "npm --workspace @mcreator-ai-copilot/core run build && npm --workspace @mcreator-ai-copilot/api run build && npm --workspace @mcreator-ai-copilot/web run build",
-    "test": "npm --workspace @mcreator-ai-copilot/core test && npm --workspace @mcreator-ai-copilot/api test"
+    "test": "npm --workspace @mcreator-ai-copilot/core run build && npm --workspace @mcreator-ai-copilot/api run build && npm --workspace @mcreator-ai-copilot/core test && npm --workspace @mcreator-ai-copilot/api test"
   },
   "devDependencies": { "concurrently": "^9.1.2", "typescript": "^5.7.3" },
   "engines": { "node": ">=20" }
