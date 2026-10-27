@@ -20,16 +20,20 @@
 - [x] Add MCreator menu and toolbar shortcut
 - [x] Check companion API health and provide a useful not-running message
 - [x] Add local build configuration and build/install instructions
-- [ ] Compile plugin against the user's exact MCreator 2026.x source project
-- [ ] Run the plugin in a clean MCreator installation
+- [x] Add GitHub Actions workflow to compile against the MCreator source project and upload a plugin ZIP
+- [ ] Confirm native build workflow passes and inspect the generated ZIP artifact
+- [ ] Run the plugin in a clean MCreator 2026.3 installation
 - [ ] Expand supported MCreator release list only after compatibility checks
+- [ ] Integrate with MCreator 2026.3's local MCP interface for workspace-aware operations
 - [ ] Add in-workspace generation/editing rather than opening the companion in a browser
-- [ ] Publish an installable plugin ZIP release
+- [ ] Publish a versioned installable plugin ZIP release
 
 ## Mod generation quality
 - [ ] Version-aware prompts and artifact schemas
 - [ ] Better support for MCreator, Forge, NeoForge, and Fabric workflows
 - [ ] Target-specific build validation where a suitable toolchain is available
 - [ ] Integration tests for generated artifacts in clean example workspaces
+
+MCreator 2026.3 release notes describe an optional local MCP server and tools for mod-element creation/editing, workspace queries, templates, and troubleshooting. Prefer integrating with those supported local capabilities over brittle UI automation where practical.
 
 Generated output is not production-ready until tested against each declared target version. Static plugin checks do not replace a Java build or an in-app smoke test.
