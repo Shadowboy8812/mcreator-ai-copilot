@@ -24,16 +24,29 @@ dependencies {
     implementation project(':MCreator')
 }
 
-project(':MCreator').plugins.withType(IdeaPlugin).configureEach { ideaPlugin ->
-    ideaPlugin.model.project = rootProject.idea.project
+/* JCEF classes are supplied by the JetBrains Runtime with JCEF, not by a
+ * guaranteed standalone jcef.jar under MCreator/jdk. Add available runtime
+ * jars to MCreator's compile classpath so its own source can compile.
+ */
+def jcefRuntimeDirs = []
+if (System.getenv("JAVA_HOME")) {
+    jcefRuntimeDirs << file(System.getenv("JAVA_HOME") + "/lib")
+}
+jcefRuntimeDirs << file(mcreator_path + "/jdk/jbr_linux_64/lib")
+jcefRuntimeDirs << file(mcreator_path + "/jdk/jbr_win_64/lib")
+jcefRuntimeDirs << file(mcreator_path + "/jdk/jbr_mac_x64/Contents/Home/lib")
+jcefRuntimeDirs << file(mcreator_path + "/jdk/jbr_mac_aarch64/Contents/Home/lib")
+
+rootProject.project(':MCreator').dependencies {
+    jcefRuntimeDirs.each { dir ->
+        if (dir.exists()) {
+            implementation files(fileTree(dir: dir, include: ['**/*.jar']))
+        }
+    }
 }
 
-rootProject.project(':MCreator').afterEvaluate { mcreator ->
-    // Reuse MCreator's declared dependencies. JCEF is provided by MCreator's
-    // JetBrains Runtime distribution; it is not guaranteed to exist as jcef.jar.
-    mcreator.configurations.named("implementation").get().dependencies.each { dep ->
-        dependencies.add("implementation", dep)
-    }
+project(':MCreator').plugins.withType(IdeaPlugin).configureEach {
+    it.model.project = rootProject.idea.project
 }
 
 tasks.jar {
@@ -46,7 +59,7 @@ tasks.jar {
 tasks.register('runMCreatorWithPlugin', JavaExec) {
     dependsOn jar
     environment("MCREATOR_PLUGINS_FOLDER", file("./build/libs"))
-    jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
+    jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED', '--enable-native-access=ALL-UNNAMED,jcef'
     classpath = project(':MCreator').sourceSets.main.runtimeClasspath
     mainClass = 'net.mcreator.Launcher'
     workingDir = mcreator_path
