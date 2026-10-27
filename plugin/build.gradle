@@ -37,11 +37,16 @@ jcefRuntimeDirs << file(mcreator_path + "/jdk/jbr_win_64/lib")
 jcefRuntimeDirs << file(mcreator_path + "/jdk/jbr_mac_x64/Contents/Home/lib")
 jcefRuntimeDirs << file(mcreator_path + "/jdk/jbr_mac_aarch64/Contents/Home/lib")
 
-rootProject.project(':MCreator').dependencies {
-    jcefRuntimeDirs.each { dir ->
-        if (dir.exists()) {
-            implementation files(fileTree(dir: dir, include: ['**/*.jar']))
-        }
+def mcreatorProject = rootProject.project(':MCreator')
+jcefRuntimeDirs.each { dir ->
+    if (dir.exists()) {
+        // Add the runtime jars directly to the target project's implementation
+        // configuration. This avoids resolving "implementation" against the
+        // dependency-handler closure, where it is not a method.
+        mcreatorProject.dependencies.add(
+            'implementation',
+            mcreatorProject.files(mcreatorProject.fileTree(dir: dir, include: ['**/*.jar']))
+        )
     }
 }
 
