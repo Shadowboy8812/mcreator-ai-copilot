@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: jetbrains
-          java-version: "25"
+          java-version: "25.0.2"
           java-package: jdk+jcef
       - name: Prepare MCreator runtime
         working-directory: MCreator
