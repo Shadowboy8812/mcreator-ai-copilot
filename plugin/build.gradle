@@ -31,9 +31,21 @@ project(':MCreator').plugins.withType(IdeaPlugin).configureEach { ideaPlugin ->
 }
 
 rootProject.project(':MCreator').afterEvaluate { mcreator ->
+    // Reuse MCreator's declared dependencies so the plugin compiles against its actual API.
     mcreator.configurations.named("implementation").get().dependencies.each { dep ->
         dependencies.add("implementation", dep)
     }
+
+    // MCreator's source imports JCEF classes. They ship inside the JetBrains Runtime
+    // downloaded by MCreator's initialSetup task, rather than in the source checkout.
+    // Add the JCEF API jar to MCreator's own compile classpath before its compile task runs.
+    def jcefJars = mcreator.fileTree(dir: "${mcreator_path}/jdk", include: ["**/lib/jcef.jar"])
+    if (jcefJars.files.isEmpty()) {
+        throw new GradleException(
+            "JCEF API jar not found under ${mcreator_path}/jdk. Run the MCreator Gradle task 'initialSetup' first."
+        )
+    }
+    mcreator.dependencies.add("implementation", jcefJars)
 }
 
 tasks.jar {
