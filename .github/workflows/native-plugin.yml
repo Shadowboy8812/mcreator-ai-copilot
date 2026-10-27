@@ -28,27 +28,63 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: jetbrains
-          java-version: "25.0.2"
+          java-version: "25.0.3"
           java-package: jdk+jcef
       - name: Prepare MCreator runtime
         working-directory: MCreator
         run: |
           ./gradlew --no-daemon initialSetup
-          echo "JCEF API classes in configured JDK:"
-          find -L "$JAVA_HOME" -type f -name '*.jar' -print0 |
-            while IFS= read -r -d '' jarfile; do
-              if jar tf "$jarfile" 2>/dev/null | grep -q '^org/cef/CefApp.class$'; then
-                echo "Found JCEF API: $jarfile"
-              fi
-            done
+          echo "JCEF runtime version requested by MCreator:"
+          grep -E '^(jbr.version|jbr.build)=' gradle.properties || true
+          echo "JCEF-related runtime files in configured JDK:"
+          find -L "$JAVA_HOME" -iname '*jcef*' -o -iname '*cef*.jar' 2>/dev/null | head -100
           echo "MCreator-managed JBR links:"
           ls -la jdk || true
-          find -L jdk -type f -name '*.jar' -print0 |
-            while IFS= read -r -d '' jarfile; do
-              if jar tf "$jarfile" 2>/dev/null | grep -q '^org/cef/CefApp.class$'; then
-                echo "Found JCEF API: $jarfile"
-              fi
-            done
+          echo "JCEF-related runtime files in MCreator-managed JBR:"
+          find -L jdk -iname '*jcef*' -o -iname '*cef*.jar' 2>/dev/null | head -100
+          echo "Which JARs contain the old/new CEF API symbols?"
+          for root in "$JAVA_HOME" jdk lib; do
+            [ -d "$root" ] || continue
+            find -L "$root" -type f -name '*.jar' -print0 2>/dev/null |
+              while IFS= read -r -d '' jarfile; do
+                matches=$(jar tf "$jarfile" 2>/dev/null | grep -E '^(org/cef/handler/CefResourceHandler.class|org/cef/callback/CefResource(Read|Skip)Callback.class|org/cef/misc/LongRef.class)
+      - name: Build native plugin against MCreator source
+        run: ./MCreator/gradlew --no-daemon -Pmcreator_path="$GITHUB_WORKSPACE/MCreator" -p "$GITHUB_WORKSPACE/plugin" clean jar
+      - name: Verify plugin ZIP contains manifest and entry point
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import json
+
+          archives = list(Path("plugin/build/libs").glob("mcreator-ai-copilot-plugin.zip"))
+          if len(archives) != 1:
+              raise SystemExit(f"Expected one plugin ZIP, found: {archives}")
+          with ZipFile(archives[0]) as archive:
+              names = set(archive.namelist())
+              if "plugin.json" not in names:
+                  raise SystemExit("plugin.json is missing from ZIP root")
+              if "dev/mcreator/aicopilot/MCreatorAICopilotPlugin.class" not in names:
+                  raise SystemExit("Compiled Java plugin entry point is missing")
+              manifest = json.loads(archive.read("plugin.json"))
+              if manifest.get("javaplugin") != "dev.mcreator.aicopilot.MCreatorAICopilotPlugin":
+                  raise SystemExit("Manifest entry point does not match compiled class")
+          print(f"Native plugin archive validated: {archives[0]}")
+          PY
+      - name: Upload installable plugin ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcreator-ai-copilot-plugin-2026.3
+          path: plugin/build/libs/mcreator-ai-copilot-plugin.zip
+          if-no-files-found: error
+          retention-days: 14
+ || true)
+                if [ -n "$matches" ]; then
+                  echo "JAR: $jarfile"
+                  printf '%s\n' "$matches"
+                fi
+              done
+          done
       - name: Build native plugin against MCreator source
         run: ./MCreator/gradlew --no-daemon -Pmcreator_path="$GITHUB_WORKSPACE/MCreator" -p "$GITHUB_WORKSPACE/plugin" clean jar
       - name: Verify plugin ZIP contains manifest and entry point
