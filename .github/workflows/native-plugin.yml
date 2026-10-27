@@ -1,0 +1,61 @@
+name: Native MCreator plugin build
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "plugin/**"
+      - ".github/workflows/native-plugin.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-plugin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out AI Copilot
+        uses: actions/checkout@v4
+      - name: Check out MCreator source
+        uses: actions/checkout@v4
+        with:
+          repository: MCreator/MCreator
+          ref: master
+          path: MCreator
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+      - name: Build native plugin against MCreator source
+        working-directory: MCreator
+        run: ./gradlew --no-daemon -Pmcreator_path="$GITHUB_WORKSPACE/MCreator" -p "$GITHUB_WORKSPACE/plugin" clean jar
+      - name: Verify plugin ZIP contains manifest and entry point
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import json
+
+          archives = list(Path("plugin/build/libs").glob("mcreator-ai-copilot-plugin.zip"))
+          if len(archives) != 1:
+              raise SystemExit(f"Expected one plugin ZIP, found: {archives}")
+          with ZipFile(archives[0]) as archive:
+              names = set(archive.namelist())
+              if "plugin.json" not in names:
+                  raise SystemExit("plugin.json is missing from ZIP root")
+              if "dev/mcreator/aicopilot/MCreatorAICopilotPlugin.class" not in names:
+                  raise SystemExit("Compiled Java plugin entry point is missing")
+              manifest = json.loads(archive.read("plugin.json"))
+              if manifest.get("javaplugin") != "dev.mcreator.aicopilot.MCreatorAICopilotPlugin":
+                  raise SystemExit("Manifest entry point does not match compiled class")
+          print(f"Native plugin archive validated: {archives[0]}")
+          PY
+      - name: Upload installable plugin ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcreator-ai-copilot-plugin-2026.3
+          path: plugin/build/libs/mcreator-ai-copilot-plugin.zip
+          if-no-files-found: error
+          retention-days: 14
