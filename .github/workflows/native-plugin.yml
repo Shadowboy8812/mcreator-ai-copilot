@@ -17,12 +17,13 @@ jobs:
     steps:
       - name: Check out AI Copilot
         uses: actions/checkout@v4
-      - name: Check out MCreator source
+      - name: Check out MCreator source with required submodules
         uses: actions/checkout@v4
         with:
           repository: MCreator/MCreator
           ref: master
           path: MCreator
+          submodules: recursive
       - name: Set up Java 25
         uses: actions/setup-java@v4
         with:
