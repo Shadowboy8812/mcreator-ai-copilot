@@ -16,29 +16,39 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Check out AI Copilot
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Check out MCreator source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: MCreator/MCreator
-          # Pin to the 2026.3 release tag once confirmed by the upstream repository.
           ref: master
           path: MCreator
           submodules: recursive
-      - name: Set up Java 25
+      - name: Set up JetBrains JDK 25 with JCEF
         uses: actions/setup-java@v5
         with:
-          distribution: temurin
+          distribution: jetbrains
           java-version: "25"
+          java-package: jdk+jcef
       - name: Prepare MCreator runtime
         working-directory: MCreator
         run: |
           ./gradlew --no-daemon initialSetup
-          echo "JBR contents relevant to JCEF:"
-          find jdk -type f \( -iname '*jcef*' -o -iname '*cef*.jar' \) -print || true
-          echo "MCreator libraries relevant to JCEF:"
-          find lib -type f \( -iname '*jcef*' -o -iname '*cef*.jar' \) -print || true
-          echo "Runtime setup completed. The build configuration must resolve JCEF from the actual upstream layout."
+          echo "JCEF API classes in configured JDK:"
+          find -L "$JAVA_HOME" -type f -name '*.jar' -print0 |
+            while IFS= read -r -d '' jarfile; do
+              if jar tf "$jarfile" 2>/dev/null | grep -q '^org/cef/CefApp.class$'; then
+                echo "Found JCEF API: $jarfile"
+              fi
+            done
+          echo "MCreator-managed JBR links:"
+          ls -la jdk || true
+          find -L jdk -type f -name '*.jar' -print0 |
+            while IFS= read -r -d '' jarfile; do
+              if jar tf "$jarfile" 2>/dev/null | grep -q '^org/cef/CefApp.class$'; then
+                echo "Found JCEF API: $jarfile"
+              fi
+            done
       - name: Build native plugin against MCreator source
         run: ./MCreator/gradlew --no-daemon -Pmcreator_path="$GITHUB_WORKSPACE/MCreator" -p "$GITHUB_WORKSPACE/plugin" clean jar
       - name: Verify plugin ZIP contains manifest and entry point
