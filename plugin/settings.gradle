@@ -1,0 +1,8 @@
+rootProject.name = 'MCreatorAICopilot'
+
+if (!project.hasProperty('mcreator_path')) {
+    throw new GradleException("Set mcreator_path in plugin/gradle.properties to your local MCreator source project.")
+}
+
+include ':MCreator'
+project(':MCreator').projectDir = file(mcreator_path)
