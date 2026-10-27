@@ -26,7 +26,7 @@ export async function generateWithAI(input: Input, fallback: Result): Promise<Re
   const safe = parsed.artifacts.map((a: any) => {
    if (!a || typeof a.path !== "string" || typeof a.content !== "string" || a.content.length > 50000) throw new Error("AI returned an invalid artifact");
    const path = a.path.replace(/\\/g, "/");
-   if (path.startsWith("/") || path.split("/").some((part: string) => part === ".." || part === "." || !part)) throw new Error("AI returned an unsafe artifact path");
+   if (path.startsWith("/") || /^[A-Za-z]:/.test(path) || path.split("/").some((part: string) => part === ".." || part === "." || !part)) throw new Error("AI returned an unsafe artifact path");
    return { path, content: a.content, language: String(a.language || "text").slice(0, 30), description: String(a.description || "").slice(0, 240) };
   });
   return { title: String(parsed.title || input.modName).slice(0, 100), summary: String(parsed.summary || "AI-generated starter bundle; review before use.").slice(0, 1000), artifacts: safe, warnings: [...new Set([...(Array.isArray(parsed.warnings) ? parsed.warnings.map(String) : []), "AI-generated output has not been compiled or tested."])].slice(0, 12), mode: "ai" };
