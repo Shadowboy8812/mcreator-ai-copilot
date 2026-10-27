@@ -1,47 +1,43 @@
 # MCreator AI Copilot
 
-An AI-assisted workspace for designing Minecraft mods and generating starter assets for MCreator and related Java modding workflows.
+An AI-assisted workspace for planning Minecraft mods and generating starter artifacts for MCreator and Java modding workflows.
 
-> Early MVP: generation is scaffolding, not a guarantee of a compiling mod. Review generated code and test it in your target MCreator/Minecraft version.
+> Early MVP. The generator creates planning/specification assets; it does not yet produce a guaranteed compiling mod or an installable MCreator plugin.
 
-## Features
-
-- Describe a mod idea and generate a structured artifact bundle.
-- Choose a Minecraft version and mod loader.
-- Inspect generated files and export them as a ZIP.
-- Diagnose common Java/Gradle build errors.
-- Optional server-side OpenAI-compatible model integration.
-- Separate Java plugin scaffold for future MCreator integration.
+## Current features
+- Responsive web workspace for mod ideas and target versions.
+- Deterministic starter generation that works without an AI key.
+- Optional OpenAI-compatible AI generation through server-side configuration.
+- Java/Gradle build-log diagnosis for common errors.
+- JSON bundle export and file preview.
+- Input validation and relative-path safety checks.
 
 ## Requirements
-
 - Node.js 20+
 - npm 10+
 
 ## Quick start
-
 ```bash
 npm install
 cp .env.example .env
 npm run dev
 ```
 
-The API runs on `http://localhost:8787` and the Vite web app on `http://localhost:5173`.
+The API runs on http://localhost:8787 and the Vite app on http://localhost:5173.
 
-For AI generation, set `AI_BASE_URL`, `AI_API_KEY`, and `AI_MODEL` in `.env`. The key must remain server-side; never put it in frontend variables.
+For AI generation, set AI_BASE_URL, AI_API_KEY, and AI_MODEL in the server-side .env. Never place provider secrets in frontend variables.
 
-## Project layout
+## Layout
+- apps/web — React + Vite frontend
+- apps/api — Express API, generator, diagnostics, optional AI provider
+- packages/core — shared artifact validation helpers
+- plugin — documentation/scaffold for future native integration
+- docs — architecture and roadmap
 
-- `apps/web` — React + Vite frontend
-- `apps/api` — Node API, generator, diagnostics, AI adapter
-- `packages/core` — shared validation and artifact helpers
-- `plugin` — MCreator Java plugin scaffold (not yet installable)
-- `docs` — architecture and roadmap
+## Known limitations
+- The export is JSON today; ZIP export is planned.
+- AI artifacts are uncompiled and untested until the user verifies them.
+- MCreator APIs vary by release; the native plugin is not implemented yet.
+- Full build verification is pending.
 
-## Current limitations
-
-- Generated artifacts are starter templates and must be reviewed and tested.
-- MCreator plugin APIs vary by release; the plugin is not yet connected to MCreator's extension points.
-- Full end-to-end build verification is pending.
-
-See [the roadmap](docs/ROADMAP.md) and [architecture](docs/ARCHITECTURE.md).
+See docs/ROADMAP.md and docs/ARCHITECTURE.md.
