@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  */
 public final class MCreatorAICopilotPlugin extends JavaPlugin {
     private static final Logger LOG = LogManager.getLogger("MCreator AI Copilot");
-    private static final URI COMPANION_URI = URI.create("http://127.0.0.1:5173/");
+    private static final URI COMPANION_URI = URI.create("http://localhost:5173/");
     private static final URL HEALTH_URL = createHealthUrl();
 
     public MCreatorAICopilotPlugin(Plugin plugin) {
