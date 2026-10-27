@@ -38,15 +38,17 @@ jcefRuntimeDirs << file(mcreator_path + "/jdk/jbr_mac_x64/Contents/Home/lib")
 jcefRuntimeDirs << file(mcreator_path + "/jdk/jbr_mac_aarch64/Contents/Home/lib")
 
 def mcreatorProject = rootProject.project(':MCreator')
-jcefRuntimeDirs.each { dir ->
-    if (dir.exists()) {
-        // Add the runtime jars directly to the target project's implementation
-        // configuration. This avoids resolving "implementation" against the
-        // dependency-handler closure, where it is not a method.
-        mcreatorProject.dependencies.add(
-            'implementation',
-            mcreatorProject.files(mcreatorProject.fileTree(dir: dir, include: ['**/*.jar']))
-        )
+// MCreator's Java plugin creates the implementation configuration when its
+// build script is evaluated. Register these dependencies only after that
+// plugin is applied; adding them earlier fails with "Configuration ... not found".
+mcreatorProject.plugins.withId('java') {
+    jcefRuntimeDirs.each { dir ->
+        if (dir.exists()) {
+            mcreatorProject.dependencies.add(
+                'implementation',
+                mcreatorProject.files(mcreatorProject.fileTree(dir: dir, include: ['**/*.jar']))
+            )
+        }
     }
 }
 
