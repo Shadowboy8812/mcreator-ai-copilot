@@ -105,7 +105,7 @@ public final class MCreatorAICopilotPlugin extends JavaPlugin {
             }
             byte[] response = connection.getInputStream().readNBytes(4096);
             String body = new String(response, StandardCharsets.UTF_8);
-            return body.contains("\\"ok\\":true");
+            return body.contains("\"ok\":true");
         } catch (IOException exception) {
             LOG.log(Level.FINE, "Local AI Copilot API is not available yet", exception);
             return false;
