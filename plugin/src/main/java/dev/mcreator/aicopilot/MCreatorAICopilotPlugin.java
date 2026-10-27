@@ -4,8 +4,6 @@ import net.mcreator.plugin.JavaPlugin;
 import net.mcreator.plugin.Plugin;
 import net.mcreator.plugin.events.workspace.MCreatorLoadedEvent;
 import net.mcreator.ui.action.BasicAction;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.swing.JOptionPane;
 import javax.swing.JMenu;
@@ -17,13 +15,15 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Thin native bridge from MCreator to the local AI Copilot companion.
  * The companion remains a separate local process; this plugin never embeds API keys.
  */
 public final class MCreatorAICopilotPlugin extends JavaPlugin {
-    private static final Logger LOG = LogManager.getLogger("MCreator AI Copilot");
+    private static final Logger LOG = Logger.getLogger("MCreator AI Copilot");
     private static final URI COMPANION_URI = URI.create("http://localhost:5173/");
     private static final URL HEALTH_URL = createHealthUrl();
 
@@ -82,7 +82,7 @@ public final class MCreatorAICopilotPlugin extends JavaPlugin {
         try {
             Desktop.getDesktop().browse(COMPANION_URI);
         } catch (IOException exception) {
-            LOG.error("Could not open the local AI Copilot UI", exception);
+            LOG.log(Level.SEVERE, "Could not open the local AI Copilot UI", exception);
             JOptionPane.showMessageDialog(
                     null,
                     "Could not open the browser. Open http://127.0.0.1:5173/ manually.",
@@ -105,9 +105,9 @@ public final class MCreatorAICopilotPlugin extends JavaPlugin {
             }
             byte[] response = connection.getInputStream().readNBytes(4096);
             String body = new String(response, StandardCharsets.UTF_8);
-            return body.contains("\"ok\":true");
+            return body.contains("\\"ok\\":true");
         } catch (IOException exception) {
-            LOG.debug("Local AI Copilot API is not available yet", exception);
+            LOG.log(Level.FINE, "Local AI Copilot API is not available yet", exception);
             return false;
         } finally {
             if (connection != null) {
