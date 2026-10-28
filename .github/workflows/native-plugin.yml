@@ -17,11 +17,11 @@ jobs:
     steps:
       - name: Check out AI Copilot
         uses: actions/checkout@v5
-      - name: Check out MCreator 2026.3 release source
+      - name: Check out MCreator 2026.2 release source
         uses: actions/checkout@v5
         with:
           repository: MCreator/MCreator
-          ref: 2026.3.41718
+          ref: 2026.2.33518
           path: MCreator
           submodules: recursive
       - name: Set up JetBrains JDK 25 with JCEF
@@ -54,7 +54,7 @@ jobs:
                 fi
               done
           done
-      - name: Build native plugin against MCreator 2026.3 source
+      - name: Build native plugin against MCreator 2026.2 source
         run: ./MCreator/gradlew --no-daemon -Pmcreator_path="$GITHUB_WORKSPACE/MCreator" -p "$GITHUB_WORKSPACE/plugin" clean jar
       - name: Verify plugin ZIP contains manifest and entry point
         run: |
@@ -75,12 +75,15 @@ jobs:
               manifest = json.loads(archive.read("plugin.json"))
               if manifest.get("javaplugin") != "dev.mcreator.aicopilot.MCreatorAICopilotPlugin":
                   raise SystemExit("Manifest entry point does not match compiled class")
-          print(f"Native plugin archive validated: {archives[0]}")
+              supported = manifest.get("supportedversions", [])
+              if 202600233518 not in supported and 2026002 not in supported:
+                  raise SystemExit(f"Plugin does not declare compatibility with MCreator 2026.2: {supported}")
+          print(f"Native plugin archive validated for MCreator 2026.2: {archives[0]}")
           PY
       - name: Upload installable plugin ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: mcreator-ai-copilot-plugin-2026.3
+          name: mcreator-ai-copilot-plugin-2026.2
           path: plugin/build/libs/mcreator-ai-copilot-plugin.zip
           if-no-files-found: error
           retention-days: 14
