@@ -24,36 +24,25 @@ jobs:
           ref: 2026.2.33518
           path: MCreator
           submodules: recursive
-      - name: Set up JetBrains JDK 25 with JCEF
+      - name: Set up matching JetBrains JDK 25.0.2 with JCEF
         uses: actions/setup-java@v5
         with:
           distribution: jetbrains
-          java-version: "25.0.3"
+          java-version: "25.0.2"
           java-package: jdk+jcef
       - name: Prepare MCreator runtime
         working-directory: MCreator
         run: |
           ./gradlew --no-daemon initialSetup
-          echo "JCEF runtime version requested by MCreator:"
-          grep -E '^(jbr.version|jbr.build)=' gradle.properties || true
+          echo "MCreator 2026.2 pins JCEF to JetBrains Runtime 25.0.2 (build b329.117)."
+          echo "Configured Java runtime:"
+          java -version
           echo "JCEF-related runtime files in configured JDK:"
           find -L "$JAVA_HOME" \( -iname '*jcef*' -o -iname '*cef*.jar' \) 2>/dev/null | head -100
           echo "MCreator-managed JBR links:"
           ls -la jdk || true
           echo "JCEF-related runtime files in MCreator-managed JBR:"
           find -L jdk \( -iname '*jcef*' -o -iname '*cef*.jar' \) 2>/dev/null | head -100
-          echo "Scanning JARs for expected CEF API symbols:"
-          for root in "$JAVA_HOME" jdk lib; do
-            [ -d "$root" ] || continue
-            find -L "$root" -type f -name '*.jar' -print0 2>/dev/null |
-              while IFS= read -r -d '' jarfile; do
-                matches=$(jar tf "$jarfile" 2>/dev/null | grep -E '^(org/cef/handler/CefResourceHandler.class|org/cef/callback/CefResource(Read|Skip)Callback.class|org/cef/misc/LongRef.class)$' || true)
-                if [ -n "$matches" ]; then
-                  echo "JAR: $jarfile"
-                  printf '%s\n' "$matches"
-                fi
-              done
-          done
       - name: Build native plugin against MCreator 2026.2 source
         run: ./MCreator/gradlew --no-daemon -Pmcreator_path="$GITHUB_WORKSPACE/MCreator" -p "$GITHUB_WORKSPACE/plugin" clean jar
       - name: Verify plugin ZIP contains manifest and entry point
