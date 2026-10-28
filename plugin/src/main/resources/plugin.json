@@ -1,14 +1,14 @@
 {
   "id": "mcreator_ai_copilot",
   "supportedversions": [
-    202600399999,
+    202600341718,
     2026003
   ],
   "weight": 0,
   "javaplugin": "dev.mcreator.aicopilot.MCreatorAICopilotPlugin",
   "info": {
     "name": "MCreator AI Copilot",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "description": "Adds a native MCreator menu and toolbar shortcut to the local AI Copilot companion.",
     "author": "Shadowboy8812"
   }
