@@ -17,11 +17,11 @@ jobs:
     steps:
       - name: Check out AI Copilot
         uses: actions/checkout@v5
-      - name: Check out MCreator source
+      - name: Check out MCreator 2026.3 release source
         uses: actions/checkout@v5
         with:
           repository: MCreator/MCreator
-          ref: master
+          ref: 2026.3.41718
           path: MCreator
           submodules: recursive
       - name: Set up JetBrains JDK 25 with JCEF
@@ -54,7 +54,7 @@ jobs:
                 fi
               done
           done
-      - name: Build native plugin against MCreator source
+      - name: Build native plugin against MCreator 2026.3 source
         run: ./MCreator/gradlew --no-daemon -Pmcreator_path="$GITHUB_WORKSPACE/MCreator" -p "$GITHUB_WORKSPACE/plugin" clean jar
       - name: Verify plugin ZIP contains manifest and entry point
         run: |
